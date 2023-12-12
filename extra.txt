@@ -1,0 +1,128 @@
+using System;
+using System.Net.Http;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+
+class Program
+{
+    static void Main()
+    {
+        // API Testing
+        RunAPITests();
+
+        // UI Testing
+        RunUITests();
+    }
+
+    static void RunAPITests()
+    {
+        Console.WriteLine("Running API Tests...");
+
+        string apiKey = "c22e6900d7a13035e66cdc7fd3aaf947";
+        string baseUrl = "https://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID={apiKey}";
+
+        // Test weather data retrieval for different cities
+        string[] cities = { "London", "New York", "Tokyo" };
+        foreach (string city in cities)
+        {
+            string apiUrl = $"{baseUrl}?q={city}&appid={apiKey}&units=metric";
+            HttpResponseMessage response = CallWeatherAPI(apiUrl);
+
+            Console.WriteLine($"City: {city}, Status Code: {response.StatusCode}");
+        }
+
+        // Test cases with invalid city names
+        string[] invalidCities = { "tukmol", "zubaragu", "ambabadumba" };
+        foreach (string invalidCity in invalidCities)
+        {
+            string apiUrl = $"{baseUrl}?q={invalidCity}&appid={apiKey}&units=metric";
+            HttpResponseMessage response = CallWeatherAPI(apiUrl);
+
+            Console.WriteLine($"Invalid City: {invalidCity}, Status Code: {response.StatusCode}");
+        }
+
+        // Check the temperature format and units
+        string cityForUnitsTest = "Paris";
+        string apiUrlForUnitsTest = $"{baseUrl}?q={cityForUnitsTest}&appid={apiKey}&units=imperial";
+        HttpResponseMessage responseForUnitsTest = CallWeatherAPI(apiUrlForUnitsTest);
+
+        Console.WriteLine($"City: {cityForUnitsTest}, Temperature: {GetTemperatureFromResponse(responseForUnitsTest)}");
+
+        Console.WriteLine("API Tests completed.\n");
+    }
+
+    static void RunUITests()
+    {
+        Console.WriteLine("Running UI Tests...");
+
+        using (var driver = new ChromeDriver())
+        {
+            // Navigate to OpenWeatherMap website
+            driver.Navigate().GoToUrl("https://openweathermap.org/");
+            driver.Navigate().GoToUrl("https://home.openweathermap.org/users/sign_in");
+            driver.FindElement(By.Id("user_email")).Click();
+            driver.FindElement(By.Id("user_email")).Clear();
+            driver.FindElement(By.Id("user_email")).SendKeys("thang.jay@gmail.com");
+            driver.FindElement(By.Id("user_password")).Clear();
+            driver.FindElement(By.Id("user_password")).SendKeys("P4ssw0rd");
+            driver.FindElement(By.Name("commit")).Click();
+            driver.Navigate().GoToUrl("https://home.openweathermap.org/");
+
+Console.WriteLine("Running API Tests...");
+
+        string apiKey = "c22e6900d7a13035e66cdc7fd3aaf947";
+        string baseUrl = "https://api.openweathermap.org/data/2.5/weather?q=London,uk&APPID=c22e6900d7a13035e66cdc7fd3aaf947";
+
+        // Test weather data retrieval for different cities
+        string[] cities = { "London", "New York", "Tokyo" };
+        foreach (string city in cities)
+        {
+            string apiUrl = $"{baseUrl}?q={city}&appid={apiKey}&units=metric";
+            HttpResponseMessage response = CallWeatherAPI(apiUrl);
+
+            Console.WriteLine($"City: {city}, Status Code: {response.StatusCode}");
+        }
+
+        // Test cases with invalid city names
+        string[] invalidCities = { "InvalidCity1", "InvalidCity2", "InvalidCity3" };
+        foreach (string invalidCity in invalidCities)
+        {
+            string apiUrl = $"{baseUrl}?q={invalidCity}&appid={apiKey}&units=metric";
+            HttpResponseMessage response = CallWeatherAPI(apiUrl);
+
+            Console.WriteLine($"Invalid City: {invalidCity}, Status Code: {response.StatusCode}");
+        }
+
+        // Check the temperature format and units
+        string cityForUnitsTest = "Paris";
+        string apiUrlForUnitsTest = $"{baseUrl}?q={cityForUnitsTest}&appid={apiKey}&units=imperial";
+        HttpResponseMessage responseForUnitsTest = CallWeatherAPI(apiUrlForUnitsTest);
+
+        Console.WriteLine($"City: {cityForUnitsTest}, Temperature: {GetTemperatureFromResponse(responseForUnitsTest)}");
+
+        Console.WriteLine("API Tests completed.\n");
+            
+
+            Console.WriteLine("UI Tests completed.");
+        }
+
+        
+    }
+
+    static HttpResponseMessage CallWeatherAPI(string apiUrl)
+    {
+        using (HttpClient client = new HttpClient())
+        {
+            return client.GetAsync(apiUrl).Result;
+        }
+    }
+
+    static string GetTemperatureFromResponse(HttpResponseMessage response)
+    {
+        string content = response.Content.ReadAsStringAsync().Result;
+        // Parse the response content and extract the temperature information
+        // Modify this part based on the actual API response structure
+        return "ExtractedTemperature";
+    }
+}
+

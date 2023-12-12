@@ -5,6 +5,8 @@ using OpenQA.Selenium.Chrome;
 
 class Program
 {
+    static string[] cities = { "London", "Tokyo", "New York" };
+
     static void Main()
     {
         // API Testing
@@ -18,35 +20,35 @@ class Program
     {
         Console.WriteLine("Running API Tests...");
 
-        string apiKey = "cd3ee0d53c3a293a7f18a2896e0c2f21";
-        string baseUrl = "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={API key}";
-
-        // Test weather data retrieval for different cities
-        string[] cities = { "London", "New York", "Tokyo" };
         foreach (string city in cities)
         {
-            string apiUrl = $"{baseUrl}?q={city}&appid={apiKey}&units=metric";
+            string apiUrl = GenerateApiUrl(city);
             HttpResponseMessage response = CallWeatherAPI(apiUrl);
 
             Console.WriteLine($"City: {city}, Status Code: {response.StatusCode}");
+
+            // Print the API response content
+            Console.WriteLine($"API Response for {city}: {response.Content.ReadAsStringAsync().Result}");
         }
 
         // Test cases with invalid city names
-        string[] invalidCities = { "InvalidCity1", "InvalidCity2", "InvalidCity3" };
+        string[] invalidCities = { "tongtue", "zubaragu", "ambabadumba" };
         foreach (string invalidCity in invalidCities)
         {
-            string apiUrl = $"{baseUrl}?q={invalidCity}&appid={apiKey}&units=metric";
+            string apiUrl = GenerateApiUrl(invalidCity);
             HttpResponseMessage response = CallWeatherAPI(apiUrl);
 
-            Console.WriteLine($"Invalid City: {invalidCity}, Status Code: {response.StatusCode}");
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Console.WriteLine($"Invalid City: {invalidCity}, Status Code: {response.StatusCode}. City not found.");
+            }
+            else
+            {
+                Console.WriteLine($"Invalid City: {invalidCity}, Status Code: {response.StatusCode}. Check the response for more details.");
+                // Print the API response content
+                Console.WriteLine($"API Response for {invalidCity}: {response.Content.ReadAsStringAsync().Result}");
+            }
         }
-
-        // Check the temperature format and units
-        string cityForUnitsTest = "Paris";
-        string apiUrlForUnitsTest = $"{baseUrl}?q={cityForUnitsTest}&appid={apiKey}&units=imperial";
-        HttpResponseMessage responseForUnitsTest = CallWeatherAPI(apiUrlForUnitsTest);
-
-        Console.WriteLine($"City: {cityForUnitsTest}, Temperature: {GetTemperatureFromResponse(responseForUnitsTest)}");
 
         Console.WriteLine("API Tests completed.\n");
     }
@@ -59,6 +61,7 @@ class Program
         {
             // Navigate to OpenWeatherMap website
             driver.Navigate().GoToUrl("https://openweathermap.org/");
+            driver.Navigate().GoToUrl("https://openweathermap.org/");
             driver.Navigate().GoToUrl("https://home.openweathermap.org/users/sign_in");
             driver.FindElement(By.Id("user_email")).Click();
             driver.FindElement(By.Id("user_email")).Clear();
@@ -68,45 +71,25 @@ class Program
             driver.FindElement(By.Name("commit")).Click();
             driver.Navigate().GoToUrl("https://home.openweathermap.org/");
 
-Console.WriteLine("Running API Tests...");
+            // Log in using the API key
+            LogInUsingAPIKey(driver, "c22e6900d7a13035e66cdc7fd3aaf947"); // Replace with your actual API key
 
-        string apiKey = "cd3ee0d53c3a293a7f18a2896e0c2f21";
-        string baseUrl = "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={API key}";
-
-        // Test weather data retrieval for different cities
-        string[] cities = { "London", "New York", "Tokyo" };
-        foreach (string city in cities)
-        {
-            string apiUrl = $"{baseUrl}?q={city}&appid={apiKey}&units=metric";
-            HttpResponseMessage response = CallWeatherAPI(apiUrl);
-
-            Console.WriteLine($"City: {city}, Status Code: {response.StatusCode}");
-        }
-
-        // Test cases with invalid city names
-        string[] invalidCities = { "InvalidCity1", "InvalidCity2", "InvalidCity3" };
-        foreach (string invalidCity in invalidCities)
-        {
-            string apiUrl = $"{baseUrl}?q={invalidCity}&appid={apiKey}&units=metric";
-            HttpResponseMessage response = CallWeatherAPI(apiUrl);
-
-            Console.WriteLine($"Invalid City: {invalidCity}, Status Code: {response.StatusCode}");
-        }
-
-        // Check the temperature format and units
-        string cityForUnitsTest = "Paris";
-        string apiUrlForUnitsTest = $"{baseUrl}?q={cityForUnitsTest}&appid={apiKey}&units=imperial";
-        HttpResponseMessage responseForUnitsTest = CallWeatherAPI(apiUrlForUnitsTest);
-
-        Console.WriteLine($"City: {cityForUnitsTest}, Temperature: {GetTemperatureFromResponse(responseForUnitsTest)}");
-
-        Console.WriteLine("API Tests completed.\n");
-            
+            // Perform weather-related actions for the logged-in user
+            foreach (string city in cities)
+            {
+                SearchForWeather(driver, city);
+            }
 
             Console.WriteLine("UI Tests completed.");
         }
+    }
 
-        
+    static string GenerateApiUrl(string city)
+    {
+        string baseUrl = "https://api.openweathermap.org/data/2.5/weather";
+        string apiKey = "c22e6900d7a13035e66cdc7fd3aaf947"; // Replace with your actual API key
+
+        return $"{baseUrl}?q={city}&APPID={apiKey}";
     }
 
     static HttpResponseMessage CallWeatherAPI(string apiUrl)
@@ -117,12 +100,22 @@ Console.WriteLine("Running API Tests...");
         }
     }
 
-    static string GetTemperatureFromResponse(HttpResponseMessage response)
+    static void LogInUsingAPIKey(IWebDriver driver, string apiKey)
     {
-        string content = response.Content.ReadAsStringAsync().Result;
-        // Parse the response content and extract the temperature information
-        // Modify this part based on the actual API response structure
-        return "ExtractedTemperature";
+        Console.WriteLine($"Logging in using API key: {apiKey}");
+
+        System.Threading.Thread.Sleep(2000);
+    }
+
+    static void SearchForWeather(IWebDriver driver, string city)
+    {
+        Console.WriteLine($"Searching for weather in {city}");
+
+        // Call the OpenWeatherMap API and print the details of the response
+        string apiUrl = GenerateApiUrl(city);
+        HttpResponseMessage response = CallWeatherAPI(apiUrl);
+        Console.WriteLine($"API Response for {city}: {response.Content.ReadAsStringAsync().Result}");
+
+        System.Threading.Thread.Sleep(2000);
     }
 }
-

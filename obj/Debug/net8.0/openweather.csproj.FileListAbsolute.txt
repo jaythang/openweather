@@ -28,3 +28,4 @@
 /Users/jayespinosa/Documents/openweather/bin/Debug/net8.0/testcentric.engine.metadata.dll
 /Users/jayespinosa/Documents/openweather/bin/Debug/net8.0/nunit.framework.legacy.dll
 /Users/jayespinosa/Documents/openweather/bin/Debug/net8.0/WebDriver.Support.dll
+/Users/jayespinosa/Documents/openweather/obj/Debug/net8.0/openweather.sourcelink.json
