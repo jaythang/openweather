@@ -103,6 +103,7 @@ class Program
             driver.FindElement(By.Name("commit")).Click();
             driver.Navigate().GoToUrl("https://home.openweathermap.org/");
 
+
             // Check if the user is already logged in
             if (!string.IsNullOrEmpty(userApiKey))
             {
@@ -120,6 +121,11 @@ class Program
             {
                 SearchForWeather(driver, city);
             }
+
+            //Logout User
+            driver.Navigate().GoToUrl("https://home.openweathermap.org/");
+            driver.FindElement(By.XPath("//div[@id='user-dropdown']/div")).Click();
+            driver.FindElement(By.LinkText("Logout")).Click();
 
             Console.WriteLine("UI Tests completed.");
         }
@@ -172,6 +178,8 @@ class Program
         Console.WriteLine($"Searching for weather in {city}");
 
         // Call the OpenWeatherMap API and print the details of the response
+
+        
         string apiUrl = GenerateApiUrl(city);
         HttpResponseMessage response = CallWeatherAPI(apiUrl);
         Console.WriteLine($"API Response for {city}: {response.Content.ReadAsStringAsync().Result}");
@@ -183,8 +191,44 @@ class Program
         UpdateUITestResults(response.StatusCode, city);
     }
 
-    static void UpdateApiTestResults(System.Net.HttpStatusCode statusCode, string cityName)
+    static void RunAPITests1()
+{
+    Console.WriteLine("Running API Tests...");
+
+    // Test login status during runtime
+    if (!string.IsNullOrEmpty(userApiKey))
     {
+        Console.WriteLine("User is already logged in.");
+    }
+    else
+    {
+        Console.WriteLine("User is not logged in. Logging in...");
+        // Perform the login logic
+        LogIn();
+    }
+
+    foreach (string city in cities)
+    {
+        string apiUrl = GenerateApiUrl(city);
+        HttpResponseMessage response = CallWeatherAPI(apiUrl);
+
+        Console.WriteLine($"City: {city}, Status Code: {response.StatusCode}");
+
+        // Print the API response content
+        Console.WriteLine($"API Response for {city}: {response.Content.ReadAsStringAsync().Result}");
+
+        // Update test results based on status code
+        UpdateApiTestResults(response.StatusCode, city);
+    }
+
+    // ... (existing code)
+}
+
+static void UpdateApiTestResults(System.Net.HttpStatusCode statusCode, string cityName)
+{
+    if (!string.IsNullOrEmpty(userApiKey))
+    {
+        // User is logged in, expect 200 status code
         if (statusCode == System.Net.HttpStatusCode.OK)
         {
             apiTestsPassed++;
@@ -195,6 +239,20 @@ class Program
             Console.WriteLine($"API Test Failed for {cityName}");
         }
     }
+    else
+    {
+        // User is not logged in, expect 401 status code
+        if (statusCode == System.Net.HttpStatusCode.Unauthorized)
+        {
+            apiTestsPassed++;
+        }
+        else
+        {
+            apiTestsFailed++;
+            Console.WriteLine($"API Test Failed for {cityName}");
+        }
+    }
+}
 
     static void UpdateUITestResults(System.Net.HttpStatusCode statusCode, string cityName)
     {
