@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -10,6 +11,12 @@ class Program
     // Variable to store the user's API key
     static string userApiKey = "c22e6900d7a13035e66cdc7fd3aaf947"; // Replace with your actual API key for the logged-in user
 
+    // Variables to store test results
+    static int apiTestsPassed = 0;
+    static int apiTestsFailed = 0;
+    static int uiTestsPassed = 0;
+    static int uiTestsFailed = 0;
+
     static void Main()
     {
         // API Testing
@@ -17,11 +24,26 @@ class Program
 
         // UI Testing
         RunUITests();
+
+        // Display summary report
+        DisplaySummaryReport();
     }
 
     static void RunAPITests()
     {
         Console.WriteLine("Running API Tests...");
+
+        // Test login status during runtime
+        if (!string.IsNullOrEmpty(userApiKey))
+        {
+            Console.WriteLine("User is already logged in.");
+        }
+        else
+        {
+            Console.WriteLine("User is not logged in. Logging in...");
+            // Perform the login logic
+            LogIn();
+        }
 
         foreach (string city in cities)
         {
@@ -32,6 +54,9 @@ class Program
 
             // Print the API response content
             Console.WriteLine($"API Response for {city}: {response.Content.ReadAsStringAsync().Result}");
+
+            // Update test results
+            UpdateApiTestResults(response.StatusCode, city);
         }
 
         // Test cases with invalid city names
@@ -51,6 +76,9 @@ class Program
                 // Print the API response content
                 Console.WriteLine($"API Response for {invalidCity}: {response.Content.ReadAsStringAsync().Result}");
             }
+
+            // Update test results
+            UpdateApiTestResults(response.StatusCode, invalidCity);
         }
 
         Console.WriteLine("API Tests completed.\n");
@@ -60,9 +88,11 @@ class Program
     {
         Console.WriteLine("Running UI Tests...");
 
+        // Test login status during runtime
         using (var driver = new ChromeDriver())
         {
             // Navigate to OpenWeatherMap website
+            driver.Navigate().GoToUrl("https://openweathermap.org/");
             driver.Navigate().GoToUrl("https://openweathermap.org/");
             driver.Navigate().GoToUrl("https://home.openweathermap.org/users/sign_in");
             driver.FindElement(By.Id("user_email")).Click();
@@ -73,9 +103,15 @@ class Program
             driver.FindElement(By.Name("commit")).Click();
             driver.Navigate().GoToUrl("https://home.openweathermap.org/");
 
-            // Log in using the API key (if the API key is set)
+            // Check if the user is already logged in
             if (!string.IsNullOrEmpty(userApiKey))
             {
+                Console.WriteLine("User is already logged in.");
+            }
+            else
+            {
+                Console.WriteLine("User is not logged in. Logging in...");
+                // Perform the login logic
                 LogInUsingAPIKey(driver, userApiKey);
             }
 
@@ -112,10 +148,22 @@ class Program
         }
     }
 
+    static void LogIn()
+    {
+        // Your login logic here...
+        Console.WriteLine("Performing login...");
+        // For demonstration purposes, let's wait for a few seconds
+        System.Threading.Thread.Sleep(2000);
+        // Set the userApiKey to a valid API key after successful login
+        userApiKey = "VALID_API_KEY"; // Replace with the actual valid API key
+    }
+
     static void LogInUsingAPIKey(IWebDriver driver, string apiKey)
     {
+        // Your login logic here...
         Console.WriteLine($"Logging in using API key: {apiKey}");
 
+        // For demonstration purposes, let's wait for a few seconds
         System.Threading.Thread.Sleep(2000);
     }
 
@@ -128,6 +176,45 @@ class Program
         HttpResponseMessage response = CallWeatherAPI(apiUrl);
         Console.WriteLine($"API Response for {city}: {response.Content.ReadAsStringAsync().Result}");
 
+        // For demonstration purposes, let's wait for a few seconds
         System.Threading.Thread.Sleep(2000);
+
+        // Update test results
+        UpdateUITestResults(response.StatusCode, city);
+    }
+
+    static void UpdateApiTestResults(System.Net.HttpStatusCode statusCode, string cityName)
+    {
+        if (statusCode == System.Net.HttpStatusCode.OK)
+        {
+            apiTestsPassed++;
+        }
+        else
+        {
+            apiTestsFailed++;
+            Console.WriteLine($"API Test Failed for {cityName}");
+        }
+    }
+
+    static void UpdateUITestResults(System.Net.HttpStatusCode statusCode, string cityName)
+    {
+        if (statusCode == System.Net.HttpStatusCode.OK)
+        {
+            uiTestsPassed++;
+        }
+        else
+        {
+            uiTestsFailed++;
+            Console.WriteLine($"UI Test Failed for {cityName}");
+        }
+    }
+
+    static void DisplaySummaryReport()
+    {
+        Console.WriteLine("\nSummary Report:");
+        Console.WriteLine($"API Tests Passed: {apiTestsPassed}");
+        Console.WriteLine($"API Tests Failed: {apiTestsFailed}");
+        Console.WriteLine($"UI Tests Passed: {uiTestsPassed}");
+        Console.WriteLine($"UI Tests Failed: {uiTestsFailed}");
     }
 }
