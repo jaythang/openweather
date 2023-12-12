@@ -7,6 +7,9 @@ class Program
 {
     static string[] cities = { "London", "Tokyo", "New York" };
 
+    // Variable to store the user's API key
+    static string userApiKey = "c22e6900d7a13035e66cdc7fd3aaf947"; // Replace with your actual API key for the logged-in user
+
     static void Main()
     {
         // API Testing
@@ -61,7 +64,6 @@ class Program
         {
             // Navigate to OpenWeatherMap website
             driver.Navigate().GoToUrl("https://openweathermap.org/");
-            driver.Navigate().GoToUrl("https://openweathermap.org/");
             driver.Navigate().GoToUrl("https://home.openweathermap.org/users/sign_in");
             driver.FindElement(By.Id("user_email")).Click();
             driver.FindElement(By.Id("user_email")).Clear();
@@ -71,10 +73,13 @@ class Program
             driver.FindElement(By.Name("commit")).Click();
             driver.Navigate().GoToUrl("https://home.openweathermap.org/");
 
-            // Log in using the API key
-            LogInUsingAPIKey(driver, "c22e6900d7a13035e66cdc7fd3aaf947"); // Replace with your actual API key
+            // Log in using the API key (if the API key is set)
+            if (!string.IsNullOrEmpty(userApiKey))
+            {
+                LogInUsingAPIKey(driver, userApiKey);
+            }
 
-            // Perform weather-related actions for the logged-in user
+            // Perform weather-related actions for the user
             foreach (string city in cities)
             {
                 SearchForWeather(driver, city);
@@ -87,9 +92,16 @@ class Program
     static string GenerateApiUrl(string city)
     {
         string baseUrl = "https://api.openweathermap.org/data/2.5/weather";
-        string apiKey = "c22e6900d7a13035e66cdc7fd3aaf947"; // Replace with your actual API key
 
-        return $"{baseUrl}?q={city}&APPID={apiKey}";
+        // Check if the user is logged in (API key is set)
+        if (!string.IsNullOrEmpty(userApiKey))
+        {
+            return $"{baseUrl}?q={city}&APPID={userApiKey}";
+        }
+        else
+        {
+            return $"{baseUrl}?q={city}";
+        }
     }
 
     static HttpResponseMessage CallWeatherAPI(string apiUrl)
