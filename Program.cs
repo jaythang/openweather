@@ -106,17 +106,16 @@ class Program
 
             // Check if the user is already logged in
             if (!string.IsNullOrEmpty(userApiKey))
-           {
+            {
+                Console.WriteLine("User is already logged in.");
+            }
+            else
+            {
                 Console.WriteLine("User is not logged in. Logging in...");
                 // Perform the login logic
                 LogInUsingAPIKey(driver, userApiKey);
             }
 
-            else
-             {
-                Console.WriteLine("User is already logged in.");
-            }
-            
             // Perform weather-related actions for the user
             foreach (string city in cities)
             {
